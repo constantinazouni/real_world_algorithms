@@ -1,36 +1,13 @@
-import sys,sre_yield,string
+import sys
+import sre_yield
+import string
 
-def main(argv):
-    crossword_file=sys.argv[1]
-    regural_expressions_file=sys.argv[2]
-    with open(crossword_file, 'r') as file:
-       cross = file.readlines()
-       cross = [row.split(',') for row in cross] 
-    V, reguralList = [], []
-    numdict, mydict,worddict = {}, {},{}         
-    with open(regural_expressions_file, 'r') as l:    
-        reguralList=l.readlines()
-    reguralList=[x.replace("\n","") for x in reguralList]    
-    for row in cross:
-        V.append(int(row[0]))            
-        worddict[int(row[0])]=str(row[1]) 
-        mydict.setdefault(int(row[0]),[])
-        for i in range(2,len(row),2):
-           mydict[int(row[0])].append(int(row[i]))
-        numdict.setdefault(int(row[0]),[])          
-        for j in range(2,len(row)):
-            numdict[int(row[0])].append(int(row[j]))                                   
-    reguralFlag=[False]*len(reguralList)
-    for w in worddict:
-        worddict=fillthegaps(w,worddict,numdict)   
-    start=findnext(mydict,0,V,worddict,False)
-    solution=solve_recursive(mydict,start,worddict,numdict,reguralList,reguralFlag,V)
-    for key in sorted(solution):        
-        print(str(key) + " " + solution[key][0] + " " + solution[key][1])
 
-    
-def fillthegaps(w,worddict,numdict):           
+#fills the gaps in worddict with the characters of the chosen word  
+def fillthegaps(w,worddict,numdict):
+    #checks if the word is already filled
     if worddict[w].count(".")!=len(worddict[w]):
+        #finds neighbors in order to fill the positions that are crossed
         neigh=numdict[w]  
         for n in range(0,len(neigh),2):                     
             herpos=neigh[n+1]                               
@@ -68,15 +45,20 @@ def findmatch(w,word,worddict,numdict,reguralList,reguralFlag):
                 mdict.setdefault(reg,[])
                 for m in match:                    
                     mdict[reg].append(m)                                                                                  
-    return mdict       
+    return mdict
 
+     
+#finds the next word to fill that has the biggest ration: filled_gaps/word_lengh
 def findnext(graph,position,path,worddict,flag):
-    lengh, filled, ratio={}, {}, {}    
+    lengh, filled, ratio={}, {}, {}
+    #calculates all ratios  
     for vertex in path:
         lengh[vertex]=len(worddict[vertex])
         filled[vertex]=lengh[vertex] - worddict[vertex].count(".")
-        ratio[vertex]=filled[vertex]/lengh[vertex]    
-    if flag:
+        ratio[vertex]=filled[vertex]/lengh[vertex]
+    #if flag is true and we have more than one max ratios we choose the one that
+    #is a neighbor to the word that we just filled
+    if flag:        
         values=ratio.values()
         maxvalue=max(values)
         temp=list(graph[position])        
@@ -116,7 +98,45 @@ def solve_recursive(graph,position,worddict,intersect,reguralList,reguralFlag,pa
             worddict=fillthegaps(vertex,worddict,intersect)            
             return result      
     return result
-  
+
+
+def main(argv):
+    crossword_file=sys.argv[1]
+    regural_expressions_file=sys.argv[2]
+    #read crossword file
+    with open(crossword_file, 'r') as file:
+       cross = file.readlines()
+       cross = [row.split(',') for row in cross] 
+    V, reguralList = [], []
+    numdict, mydict,worddict = {}, {},{}
+    #read regular expressions file    
+    with open(regural_expressions_file, 'r') as l:    
+        reguralList=l.readlines()
+    reguralList=[x.replace("\n","") for x in reguralList]
+    #add mydict crossword data in two dictionaries
+    for row in cross:
+        V.append(int(row[0]))
+        #save every character in a dictionary            
+        worddict[int(row[0])]=str(row[1]) 
+        mydict.setdefault(int(row[0]),[])
+        for i in range(2,len(row),2):
+           mydict[int(row[0])].append(int(row[i]))
+        #save the position where the words are crossed
+        numdict.setdefault(int(row[0]),[])          
+        for j in range(2,len(row)):
+            numdict[int(row[0])].append(int(row[j]))
+    #create array to keep track of used expressions                                  
+    reguralFlag=[False]*len(reguralList)
+    #fill the gaps for the already completed words
+    for w in worddict:
+        worddict=fillthegaps(w,worddict,numdict)
+    #finds the best word to start  
+    start=findnext(mydict,0,V,worddict,False)
+    solution=solve_recursive(mydict,start,worddict,numdict,reguralList,reguralFlag,V)
+    #print solution
+    for key in sorted(solution):        
+        print(str(key) + " " + solution[key][0] + " " + solution[key][1])
+
     
 if __name__ == "__main__":
    main(sys.argv[1:])
