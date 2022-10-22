@@ -2,97 +2,14 @@ import sys
 from itertools import combinations
 from itertools import chain
 
-def main(argv):
-    mydict={}    
-    comb=[]    
-    par1,par2=None,None  
-    if len(sys.argv)==2:
-        file=sys.argv[1]
-    elif len(sys.argv)==3:
-        par1=sys.argv[1]
-        file=sys.argv[2]
-    elif len(sys.argv)==4:
-        file=sys.argv[3]
-        par1=sys.argv[1]
-        par2=sys.argv[2]
-    with open(file, 'r') as file:
-       points = file.readlines()
-       points = [row.split(' ') for row in points]    
-    temppoints=[]
-    for i in range (0,len(points)):
-        points[i][1]=points[i][1].replace("\n","")        
-        temp=[]
-        temp.append(int(points[i][0]))
-        temp.append(int(points[i][1]))
-        temppoints.append(temp)    
-    temppoints.sort()
-    for i in range (0,len(points)):
-        mydict.setdefault(i,[])        
-        mydict[i].append(int(temppoints[i][0]))
-        mydict[i].append(int(temppoints[i][1]))        
-    for i in combinations(mydict.keys(),2):        
-        comb.append(i)   
-    flag=False
-    if par1=="-g" or par2=="-g":
-        flag=True
-    lines=findAllLines(mydict, comb,flag)
-    u=set([x for x in mydict.keys()])
-    un=[x for x in mydict.keys()]
-    cost={}    
-    for l in lines.keys():
-        cost[l]=len(lines[l]) 
-    result=[]
-    if par1=="-f" or par2=="-f":
-        result=set_cover(u, lines, cost) 
-        sol=[]
-        for s in result:
-            pr=[]
-            if len(lines[s])==1:
-                pointnow=temppoints[lines[s][0]]
-                pr.append(pointnow)
-                newpoint=[]
-                newpoint.append(int(pointnow[0])+1)
-                newpoint.append(pointnow[1])
-                pr.append(newpoint)
-            else:
-                for point in lines[s]:
-                    pr.append(temppoints[point])          
-            sol.append(pr)
-        for s in sol:
-            for r in s:
-                print("("+ str(r[0]) + ", " + str(r[1]) +")", end=" ")
-            print()
-                
-        
-        
-    else:
-        result=greedy(un, lines)
-        s=[]
-        for r in result:
-            pr=[]
-            if len(r)==1:
-                pointnow=temppoints[r[0]]
-                pr.append(pointnow)
-                newpoint=[]
-                newpoint.append(int(pointnow[0])+1)
-                newpoint.append(pointnow[1])
-                pr.append(newpoint)
-            else:
-                for point in r:
-                    pr.append(temppoints[point])
-            s.append(pr)       
-        for result in s:
-            for r in result:
-                print("("+ str(r[0]) + ", " + str(r[1]) +")", end=" ")
-            print()
                     
- 
+#calculate the slop of two points
 def slop(dx,dy):
-    g = gcd(abs(dy), abs(dx))     
+    g = gcd(abs(dy), abs(dx))   
     if (dy < 0) or (dx < 0) :
         return (-abs(dy) // g, abs(dx) // g)
     else:
-        return (abs(dy) // g, abs(dx) // g)   
+        return (abs(dy) // g, abs(dx) // g)
   
  
 def gcd(x, y):
@@ -106,7 +23,9 @@ def findAllLines(mydict,comb,flag):
     paralines={}
     current={}
     alllines={}
+    #unitialize all points as not used
     usedpoints=[False for x in range (len(mydict))]
+    #calculate slop for all lines that generate from the combinations
     for c in comb:
         point1=c[0]
         point2=c[1]
@@ -114,23 +33,26 @@ def findAllLines(mydict,comb,flag):
         y1=mydict[point1][1]
         x2=mydict[point2][0]
         y2=mydict[point2][1]
-        temp=slop(x2-x1, y2-y1)  
+        temp=slop(x2-x1, y2-y1)
+        #check if a line with that slop already exists
         if temp not in lines.keys():
             lines.setdefault(temp,[])
             lines[temp].append(c)
         else:
             lines[temp].append(c)
+    #if grid argument exists
     if flag :
         for line in lines.keys():
+            #keeps only the lines that are horizontal or vertical
             if line[0]==0 or line[1]==0:
-                paralines.setdefault(line,[]) 
+                paralines.setdefault(line,[])
                 for i in range(len(lines[line])):
                     paralines[line].append(lines[line][i])
         current=paralines
+    #if grid argument doesn't exist we keep all the lines
     else:
         current=lines
-    counter=0 
-    
+    counter=0    
     for c in current.keys(): 
         used=[]       
         for i in range (0,len(current[c])):           
@@ -215,6 +137,102 @@ def greedy(u,lines):
         del lines[line]        
     return result
 
-    
+
+def main(argv):
+    mydict={}    
+    comb=[]    
+    par1,par2=None,None
+    #read arguments  
+    if len(sys.argv)==2:
+        file=sys.argv[1]
+    elif len(sys.argv)==3:
+        par1=sys.argv[1]
+        file=sys.argv[2]
+    elif len(sys.argv)==4:
+        file=sys.argv[3]
+        par1=sys.argv[1]
+        par2=sys.argv[2]
+    #read points file
+    with open(file, 'r') as file:
+       points = file.readlines()
+       points = [row.split(' ') for row in points]
+    temppoints=[]
+    #save points in a temporary dictionary
+    for i in range (0,len(points)):
+        points[i][1]=points[i][1].replace("\n","") 
+        temp=[]
+        temp.append(int(points[i][0]))
+        temp.append(int(points[i][1]))
+        temppoints.append(temp)
+    temppoints.sort()
+    #save sorted points in a dictionary
+    for i in range (0,len(points)):
+        mydict.setdefault(i,[])    
+        mydict[i].append(int(temppoints[i][0]))
+        mydict[i].append(int(temppoints[i][1]))
+    #find all combinations of two points
+    for i in combinations(mydict.keys(),2):
+        comb.append(i)
+    flag=False
+    #check if argument is grid
+    if par1=="-g" or par2=="-g":
+        flag=True
+    lines=findAllLines(mydict, comb,flag)
+    u=set([x for x in mydict.keys()])
+    un=[x for x in mydict.keys()]
+    cost={}
+    #counts the points every line has 
+    for l in lines.keys():
+        cost[l]=len(lines[l])
+    result=[]
+    #check for full exploration argument
+    if par1=="-f" or par2=="-f":
+        result=set_cover(u, lines, cost)
+        sol=[]
+        #preperation for printing format
+        for s in result:
+            pr=[]
+            if len(lines[s])==1:
+                pointnow=temppoints[lines[s][0]]
+                pr.append(pointnow)
+                newpoint=[]
+                newpoint.append(int(pointnow[0])+1)
+                newpoint.append(pointnow[1])
+                pr.append(newpoint)
+            else:
+                for point in lines[s]:
+                    pr.append(temppoints[point])      
+            sol.append(pr)
+        #print result
+        for s in sol:
+            for r in s:
+                print("("+ str(r[0]) + ", " + str(r[1]) +")", end=" ")
+            print()
+    #if exploration argument doesn't exist
+    else:
+        result=greedy(un, lines)
+        s=[]
+        #preperation for printing format
+        for r in result:
+            pr=[]
+            if len(r)==1:
+                pointnow=temppoints[r[0]]
+                pr.append(pointnow)
+                newpoint=[]
+                newpoint.append(int(pointnow[0])+1)
+                newpoint.append(pointnow[1])
+                pr.append(newpoint)
+            else:
+                for point in r:
+                    pr.append(temppoints[point])
+            s.append(pr)
+        ##print result      
+        for result in s:
+            for r in result:
+                print("("+ str(r[0]) + ", " + str(r[1]) +")", end=" ")
+            print()
+
+
+
 if __name__ == "__main__":
    main(sys.argv[1:])
