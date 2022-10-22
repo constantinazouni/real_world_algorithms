@@ -11,13 +11,13 @@ def slop(dx,dy):
     else:
         return (abs(dy) // g, abs(dx) // g)
   
- 
+#calculates the greatest common divisor
 def gcd(x, y):
     if (y == 0):
         return x
     return gcd(y, x % y)
 
-    
+#generate all lines that cover the points
 def findAllLines(mydict,comb,flag):    
     lines={}
     paralines={}
@@ -52,41 +52,48 @@ def findAllLines(mydict,comb,flag):
     #if grid argument doesn't exist we keep all the lines
     else:
         current=lines
-    counter=0    
-    for c in current.keys(): 
-        used=[]       
-        for i in range (0,len(current[c])):           
+    counter=0
+    #generate the lines from the slops and the points
+    for c in current.keys():
+        #keeps track of the used points
+        used=[]
+        for i in range (0,len(current[c])):         
             position=current[c]
-            temp=position[i]            
+            temp=position[i]  
             point=temp[0]
             if point not in used and temp[1] not in used:
+                #updates used points list
                 used.append(point)
                 used.append(temp[1])
+                #add points to the line with the specific slop
                 alllines.setdefault(counter,[])
                 alllines[counter].append(temp[0])
                 alllines[counter].append(temp[1])
-                for j in range (i+1,len(current[c])):                    
+                for j in range (i+1,len(current[c])):                  
                     position=current[c]
-                    temp=position[j]                    
-                    pointnow=temp[0]                    
-                    if point==pointnow:                        
+                    temp=position[j]               
+                    pointnow=temp[0]
+                    #check if point belogs to the specific line and add it                  
+                    if point==pointnow:
                         alllines[counter].append(temp[1])
                 counter=counter+1
+    #find unused points
     for v in alllines.values():
         for point in v:
-            usedpoints[point]=True    
-    j=len(alllines)  
+            usedpoints[point]=True  
+    j=len(alllines)
+    #create a line for every unused point
     for u in range (len(usedpoints)):
         if usedpoints[u]==False:
             alllines.setdefault(j,[])
             alllines[j].append(u)
-            j=j+1      
+            j=j+1
     return alllines
-              
 
 
-def set_cover(u, lines, costs):    
-    tempset = powerset(lines.keys())    
+#finds set of lines with the smallest cost by checking all the possible lines
+def set_cover(u, lines, costs):
+    tempset = powerset(lines.keys())  
     best_cost = float("inf")
     for subset in tempset:
         used= set()
@@ -94,47 +101,53 @@ def set_cover(u, lines, costs):
         for s in subset:
             used.update(lines[s])
             cost =cost + costs[s]
+        #checks if all points are covered and if the cost is less than the best cost
         if len(used) == len(u) and cost < best_cost:
             final_set = subset
             best_cost = cost
     return final_set
 
 
- 
-def powerset(i):   
+#generates all subsets of a set
+def powerset(i):
     s = list(i)
     return chain.from_iterable(combinations(s, r) for r in range(len(s) + 1))
 
 
-
-def findMax(u,lines):   
-    eff={}           
-    for l in lines.keys() :
+#finds line that covers the most points
+def findMax(u,lines):
+    eff={}
+    for l in lines.keys():
         sum=0
         for point in lines[l]:
+            #counts the number of points from the universe that the line covers
             if point in u:
-                sum=sum+1        
+                sum=sum+1    
         eff[l] =sum
     values=eff.values()
     maxvalue=max(values)
     min=1000
-    for l in lines.keys():            
+    #finds the line that covers the most points
+    for l in lines.keys():        
         if eff[l]==maxvalue and lines[l][0]<min:
             pos=l
-            min=lines[l][0]                
+            min=lines[l][0]
     return pos
 
-
+#finds the best lines in the greedy way
 def greedy(u,lines):
     temp=u
     result=[]
-    while len(temp)!=0:        
+    #while not all the points are covered
+    while len(temp)!=0:
+        #every time it finds the line that covers the most ucovered points   
         line=findMax(temp,lines)
-        result.append(lines[line])       
-        for l in lines[line]:           
+        result.append(lines[line])  
+        for l in lines[line]:  
             if l in temp:
                 temp.remove(l)
-        del lines[line]        
+        #remove the line so I don't have to check it again
+        del lines[line]
     return result
 
 
