@@ -2,24 +2,24 @@ import sys
 
 all_codes=[]
 
-          
+#show each code with a tabular representation    
 def makeArray(code,bits):
     array=[]
     for i in range(bits-1,-1,-1):
         temp=[]
-        for c in code:           
-            temp.append(c[i]) 
+        for c in code:
+            temp.append(c[i])
         array.append(temp)
     return array
         
-    
+#find the the reversed isomorphism of every code  
 def reverse(delta,bits):
     result=[]
-    for d in delta:        
+    for d in delta: 
         result.append(d[::-1])
     return result
         
-
+#find the isomorphism of every code
 def isomo(delta,reverse): 
     result=[]
     for j in range(0,len(delta)):
@@ -46,24 +46,28 @@ def isomo(delta,reverse):
         final.append(temp)              
     return final
                  
-#algorithm that builds all beckett gray codes
+#algorithm that builds all gray and beckett gray codes
 def GC_DFS(d,x,max_coord,bits,gc,visited,power,q,beckett):
     #if we visited all the nodes we stop recursion 
     if d==power:
         all_codes.extend(gc)    
         return
+    #for every bit of that code
     for i in range (0,min(bits-1,max_coord)+1):
         #if we want to find beckett gray codes
         if beckett:
-            x,flag,q=beckettFlip(x, i, bits, q, False,visited) 
+            x,flag,q=beckettFlip(x, i, bits, q, False,visited)
+            #if I can't flip the bit
             if flag:
+                #continue with the next bit
                 continue
         #if we want to find just gray codes
         else:
             x=Flip(x,i,bits)
         if not visited[x]:
             visited[x]=True
-            gc.append(x)      
+            gc.append(x)
+            #generate the next code
             GC_DFS(d+1,x,max(i+1,max_coord),bits,gc,visited,power,q,beckett)
             #if the flip of that code cause backtracking
             visited[x]=False
@@ -75,26 +79,32 @@ def GC_DFS(d,x,max_coord,bits,gc,visited,power,q,beckett):
         else:
             x=Flip(x,i,bits)
 
-    
-def beckettFlip(x, i, bits, q, undo,visited):
+#flip the bit that has remained the most time from 1 to 0
+def beckettFlip(x,i,bits,q,undo,visited):
     flag=False
-    temp=list(x)    
-    if temp[bits-i-1]=='0':       
+    temp=list(x)
+    #if bit is 0 turn it to 1
+    if temp[bits-i-1]=='0': 
         temp[bits-i-1]='1'
-        x="".join(temp)       
+        x="".join(temp)
         if undo:
-            q.insert(0, i)           
-        else:            
+            q.insert(0, i)
+        else:
             q.append(i)
+    #if bit is 1
     else:
-        if len(q)>0 and q[0]==i and not visited[Flip(x,q[0],bits)]:            
+        #check if the bit is the older in the queue and if I haven't visited that code
+        if len(q)>0 and q[0]==i and not visited[Flip(x,q[0],bits)]:
+            #flips bit to 0
             temp[bits-i-1]='0'
             x="".join(temp)
-            q.pop(0)  
+            q.pop(0)
+        #check if the move is undo caused from the backtrack
         elif undo and len(q)>0:
             temp[bits-i-1]='0'
             x="".join(temp)
-            q.pop()            
+            q.pop()
+        #doesn't meet the requirements to flip it          
         else:
             x="".join(temp)
             flag=True
@@ -103,11 +113,13 @@ def beckettFlip(x, i, bits, q, undo,visited):
  
 
 def Flip(x,i,bits):
-    #turns code into a list of characters
-    temp=list(x)    
+    #turns bit into a list of characters
+    temp=list(x)
+    #changes character from 0 to 1
     if temp[bits-i-1]=='0':
         temp[bits-i-1]='1'
-        x="".join(temp)        
+        x="".join(temp)
+    #changes character from 1 to 0 
     else:
         temp[bits-i-1]='0'
         x="".join(temp)
@@ -181,6 +193,7 @@ def main(argv):
     new_codes=[]
     temp=[]
     temp.append(zero)
+    #put zero code in the beginning of the codes found
     for i in range(len(all_codes)):
         if all_codes[i]==zero:
             if len(temp)>1:
@@ -189,6 +202,7 @@ def main(argv):
                 temp.append(zero)
         else:
             temp.append(all_codes[i])
+        #if I am at the last code save all the codes to new_codes
         if i==(len(all_codes)-1):
             new_codes.append(temp)
     circles=[]
@@ -200,22 +214,24 @@ def main(argv):
         if flag:
             circles.append(c)
         else:
-            paths.append(c)     
+            paths.append(c)  
     c_delta=[]
-    p_delta=[]       
+    p_delta=[]
+    #generate delta for cicles, paths and all codes
     for c in new_codes:
-        temp=[]        
-        for e in range(0,len(c)-1):    
+        temp=[]
+        for e in range(0,len(c)-1):
             diff=finddiff(c[e], c[e+1])
             temp.append(bits-1-diff)
         final=finddiff(c[0], c[len(c)-1])
-        if final!=None:                
+        if final!=None:
             temp.append(bits-1-final)
         if c in circles:
             c_delta.append(temp)
         else:
             p_delta.append(temp)
-        delta.append(temp)        
+        delta.append(temp)
+    #convert delta to strings
     str_delta=[]
     str_c_delta=[]
     str_p_delta=[]
@@ -225,7 +241,7 @@ def main(argv):
         if delta[i] in c_delta:
             str_c_delta.append(str1)
         else:
-            str_p_delta.append(str1)    
+            str_p_delta.append(str1)
     table=[]
     if '-a' in choose or '-u' in choose:
         table=delta
@@ -248,14 +264,14 @@ def main(argv):
     for i in range(len(table)):
         if table[i] in c_delta:
             if '-a' in choose or '-c' in choose:
-                output='C '    
+                output='C '
             else:
                 output='B '
         else:
             if '-a' in choose or '-p' in choose:
                 output='P '
             else:
-                output='U '     
+                output='U '    
         print(output,end="")
         print(str_table[i])
         if '-f' in choose:
@@ -265,15 +281,17 @@ def main(argv):
                     print(full[i][f])
                 else:
                     print(full[i][f] + " ", end='')
-        if '-m' in choose:    
-            array=makeArray(full[i], bits)           
+        if '-m' in choose:
+            #generate an array for every code   
+            array=makeArray(full[i], bits)       
             for a in array:
                 for i in range(len(a)):
                     if i<(len(a)-1):
                         print(a[i] + " ",end="")
                     else:
-                        print(a[i])  
+                        print(a[i])
     if '-r' in choose:
+        #generate delta isomorfism
         delta_isomorf=isomo(c_delta,reverse(c_delta, bits))
         for d in delta_isomorf:
             print(str(d[0]) + " <=> ",end="")
