@@ -5,17 +5,17 @@ Real-World Algorithms](https://mitpress.mit.edu/9780262035705/) and undertanding
 ## Regular Crosswords
 The objective of the first assignment is to create an algorithm that solves a crossword with a twist. In our case the crossword is not a regural one. Given a file of regural expression we need to fill the gaps of the crossword with the strings generated from those expressions. 
 
-Click here for more
+Click [here](https://github.com/constantinazouni/real_world_algorithms/tree/main/regular_crosswords) for more
 
 ## Covering Points
 The purpose of the second assignment is to find the mininum number of straight lines passing through the points so that you cover all of them. This problem is known as the hitting objects, or point cover, or line cover, or point line cover problem.
 
-Click here for more
+Click [here](https://github.com/constantinazouni/real_world_algorithms/tree/main/covering_points) for more
 
 ## Beckett-Gray
 The objective of the third assignment is to generate all the gray or beckett-gray codes from a given number of bits.
 
-Click here for more
+Click [here](https://github.com/constantinazouni/real_world_algorithms/tree/main/beckett_gray) for more
 
 
 
