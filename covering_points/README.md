@@ -1,4 +1,4 @@
-# Regular Crosswords
+# Covering Points
 
 You can find the assignment instructions [here](https://louridas.github.io/rwa/assignments/covering-points/)
 
